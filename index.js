@@ -20,13 +20,14 @@ async function run() {
         await client.connect();
         const database = client.db("watch_store");
         const productCollection = database.collection("products");
-        const orderCollection = database.collection("orders")
+        const orderCollection = database.collection("orders");
+        const usersCollection = database.collection("users")
 
 
         app.get('/products', async (req, res) => {
             const cursor = productCollection.find({});
             const products = await cursor.toArray();
-            res.send(products)
+            res.send(products);
         })
         app.get('/productBuy/:id', async (req, res) => {
             const id = req.params.id;
@@ -34,23 +35,54 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product);
         })
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
+            const result = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (result?.role === "admin") {
+                isAdmin = true;
+            }
+            res.json({ admin: isAdmin })
+        })
         //add order
         app.post('/order', async (req, res) => {
             console.log(req.body)
             const result = await orderCollection.insertOne(req.body)
-            res.send(result)
+            res.send(result);
         });
         //my order 
         app.get('/orders/:email', async (req, res) => {
             const email = req.params.email;
             const query = { login_user: email }
             const result = await orderCollection.find(query).toArray()
-            res.send(result)
+            res.send(result);
         })
         app.get('/order', async (req, res) => {
             const cursor = orderCollection.find({});
             const products = await cursor.toArray();
-            res.send(products)
+            res.send(products);
+        })
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user)
+            res.send(result);
+        })
+        app.put('/users', async (req, res) => {
+            const user = req.body;
+            const query = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await usersCollection.updateOne(query, updateDoc, options);
+            res.send(result);
+        })
+        app.put('/users/admin', async (req, res) => {
+            const user = req.body;
+            console.log(user)
+            const query = { email: user.email };
+            const updateDoc = { $set: { role: "admin" } };
+            const result = await usersCollection.updateOne(query, updateDoc);
+            res.send(result);
         })
 
 
