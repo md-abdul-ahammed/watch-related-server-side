@@ -20,6 +20,7 @@ async function run() {
         await client.connect();
         const database = client.db("watch_store");
         const productCollection = database.collection("products");
+        const orderCollection = database.collection("orders")
 
 
         app.get('/products', async (req, res) => {
@@ -32,6 +33,24 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const product = await productCollection.findOne(query);
             res.send(product);
+        })
+        //add order
+        app.post('/order', async (req, res) => {
+            console.log(req.body)
+            const result = await orderCollection.insertOne(req.body)
+            res.send(result)
+        });
+        //my order 
+        app.get('/orders/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { login_user: email }
+            const result = await orderCollection.find(query).toArray()
+            res.send(result)
+        })
+        app.get('/order', async (req, res) => {
+            const cursor = orderCollection.find({});
+            const products = await cursor.toArray();
+            res.send(products)
         })
 
 
