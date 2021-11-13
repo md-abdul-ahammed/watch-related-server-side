@@ -59,16 +59,19 @@ async function run() {
             const result = await orderCollection.find(query).toArray()
             res.send(result);
         })
+        //get all order
         app.get('/order', async (req, res) => {
             const cursor = orderCollection.find({});
             const products = await cursor.toArray();
             res.send(products);
         })
+        // add user
         app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user)
             res.send(result);
         })
+        //add user who login with google 
         app.put('/users', async (req, res) => {
             const user = req.body;
             const query = { email: user.email };
@@ -77,30 +80,52 @@ async function run() {
             const result = await usersCollection.updateOne(query, updateDoc, options);
             res.send(result);
         })
+        //make admin
         app.put('/users/admin', async (req, res) => {
             const user = req.body;
-            console.log(user)
             const query = { email: user.email };
             const updateDoc = { $set: { role: "admin" } };
             const result = await usersCollection.updateOne(query, updateDoc);
             res.send(result);
         })
+        //add review from client
         app.post('/reviews', async (req, res) => {
             const reviews = req.body;
-            console.log(reviews)
             const result = await feedbackCollection.insertOne(reviews)
             res.send(result)
         })
+        //get reviews for homepage show
         app.get('/reviews', async (req, res) => {
             const cursor = feedbackCollection.find({});
             const feedback = await cursor.toArray();
             res.send(feedback)
         })
-        //Delete Product 
+        //Delete ordered Product 
         app.delete("/deleteOrder/:id", async (req, res) => {
             const id = req.params.id;
-            console.log(id)
             const result = await orderCollection.deleteOne({ _id: ObjectId(id) })
+            res.send(result)
+        })
+        //update statues
+        app.put("/updateStatus/:id", async (req, res) => {
+            const id = req.params.id;
+            const status = req.body.status;
+            const query = { _id: ObjectId(id) };
+            const updateDoc = { $set: { status: status } };
+            const result = await orderCollection.updateOne(query, updateDoc);
+            res.send(result)
+        })
+        //add a new product
+        app.post("/products", async (req, res) => {
+            const product = req.body;
+            console.log(product)
+            const result = await productCollection.insertOne(product)
+            res.json(result)
+        })
+        //manage product 
+        app.delete("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const result = await productCollection.deleteOne({ _id: ObjectId(id) })
             res.send(result)
         })
 
