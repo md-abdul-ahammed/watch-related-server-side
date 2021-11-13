@@ -21,7 +21,8 @@ async function run() {
         const database = client.db("watch_store");
         const productCollection = database.collection("products");
         const orderCollection = database.collection("orders");
-        const usersCollection = database.collection("users")
+        const usersCollection = database.collection("users");
+        const feedbackCollection = database.collection('feedback')
 
 
         app.get('/products', async (req, res) => {
@@ -83,6 +84,17 @@ async function run() {
             const updateDoc = { $set: { role: "admin" } };
             const result = await usersCollection.updateOne(query, updateDoc);
             res.send(result);
+        })
+        app.post('/reviews', async (req, res) => {
+            const reviews = req.body;
+            console.log(reviews)
+            const result = await feedbackCollection.insertOne(reviews)
+            res.send(result)
+        })
+        app.get('/reviews', async (req, res) => {
+            const cursor = feedbackCollection.find({});
+            const feedback = await cursor.toArray();
+            res.send(feedback)
         })
 
 
